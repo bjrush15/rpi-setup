@@ -20,6 +20,8 @@ cp "$CONFIG_DIR/.bashrc" "$CONFIG_DIR/.bash_prompt" "$HOME"
 # get immediate use of new .bashrc
 source "$HOME/.bashrc"
 
-echo " -- INSTALLING DOCKER -- "
-# install docker via official install script
-curl -sSL https://get.docker.com | sh
+# install docker via official install script if needed
+if [[ -z `which docker` ]]; then
+  echo " -- INSTALLING DOCKER -- "
+  curl -sSL https://get.docker.com | sh
+fi
