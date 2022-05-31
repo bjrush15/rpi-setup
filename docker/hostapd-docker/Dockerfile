@@ -7,7 +7,7 @@ run apk update && apk add hostapd iw dhcp vim iptables
 add configs/hostapd.conf /etc/hostapd/hostapd.conf
 
 # configure dhcpcd
-add configs/dhcpcd.conf /etc/dhcp/dhcpd.conf
+add configs/dhcpd.conf /etc/dhcp/dhcpd.conf
 run touch /var/lib/dhcp/dhcpd.leases
 
 # configure networking
