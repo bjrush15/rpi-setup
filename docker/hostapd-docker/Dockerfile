@@ -12,7 +12,7 @@ run touch /var/lib/dhcp/dhcpd.leases
 
 # configure networking
 add configs/interfaces /etc/network/interfaces
-add configs/iptablels.sh /iptables.sh
+add configs/iptables.sh /iptables.sh
 add configs/iptables-off.sh /iptables-off.sh
 
 # copy and exec init
