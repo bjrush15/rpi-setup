@@ -30,9 +30,9 @@ ifdown wlan1
 ifup wlan1
 
 echo -e "${CYAN}[+] Configuration successful! Services will start now${NOCOLOR}"
-dhcpd -4 -f -d wlan1 &
-hostapd /etc/hostapd/hostapd.conf &
-pid=$!
-wait $pid
+#dhcpd -4 -f -d wlan1 &
+hostapd /etc/hostapd/hostapd.conf #&
+#pid=$!
+#wait $pid
 
 cleanup

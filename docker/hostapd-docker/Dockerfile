@@ -1,14 +1,14 @@
 from arm32v7/alpine
 
 # install + update
-run apk update && apk add hostapd iw dhcp vim iptables
+run apk update && apk add hostapd iw vim iptables #dhcp
 
 # configure hostapd
 add configs/hostapd.conf /etc/hostapd/hostapd.conf
 
 # configure dhcpcd
-add configs/dhcpd.conf /etc/dhcp/dhcpd.conf
-run touch /var/lib/dhcp/dhcpd.leases
+#add configs/dhcpd.conf /etc/dhcp/dhcpd.conf
+#run touch /var/lib/dhcp/dhcpd.leases
 
 # configure networking
 add configs/interfaces /etc/network/interfaces
