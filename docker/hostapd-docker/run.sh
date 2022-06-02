@@ -1,3 +1,3 @@
-#!/bin/sh
+#!/bin/bash
 
-sudo docker run --name hostapd-docker-master --cap-add=NET_ADMIN --network=host -d hostapd-docker
+sudo docker run --rm --name hostapd-docker-master --cap-add=NET_ADMIN --network=host -d hostapd-docker

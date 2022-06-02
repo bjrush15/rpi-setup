@@ -15,6 +15,8 @@ sigterm_handler() {
 cleanup (){
   echo -e "${CYAN}[*] Deleting iptables rules...${NOCOLOR}"
   sh /iptables-off.sh || echo -e "${RED}[-] Error deleting iptables rules${NOCOLOR}"
+  echo -e "${CYAN}[*] Removing route...${NOCOLOR}"
+  ip route del 192.168.1.69.0/24
   echo -e "${CYAN}[*] Restarting network interface...${NOCOLOR}"
   ifdown wlan1
   ifup wlan1
@@ -28,11 +30,11 @@ sh /iptables.sh || echo -e "${RED}[-] Error creating iptables rules${NOCOLOR}"
 echo -e "${CYAN}[*] Setting wlan1 settings${NOCOLOR}"
 ifdown wlan1
 ifup wlan1
+ip route add 192.168.69.0/24 via 192.168.69.1 dev wlan1
 
 echo -e "${CYAN}[+] Configuration successful! Services will start now${NOCOLOR}"
-#dhcpd -4 -f -d wlan1 &
-hostapd /etc/hostapd/hostapd.conf #&
-#pid=$!
-#wait $pid
+hostapd /etc/hostapd/hostapd.conf &
+pid=$!
+wait $pid
 
 cleanup

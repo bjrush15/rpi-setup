@@ -18,6 +18,8 @@ cleanup (){
 
 trap 'sigterm_handler' TERM INT
 echo -e "${CYAN}[+] Starting dnsmasq${NOCOLOR}"
-dnsmasq --no-daemon --log-queries --log-facility=/dnsmasq.log
+dnsmasq --no-daemon --log-queries --log-facility=/dnsmasq.log &
+pid=$!
+wait $pid
 
 cleanup
