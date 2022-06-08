@@ -11,7 +11,7 @@ sudo apt install -y vim dnsutils
 # install realtek rtl8814au drivers (For Alfa AWUS1900 wireless card)
 # instructions from https://davidtavarez.github.io/2018/re4son_kernel_raspberry_pi/
 # custom kernel was not needed as of 6/7/22
-if [[ -f "/lib/modules/$(uname -r)/kernel/drivers/net/wireless/88XXau.ko" ]]; then
+if [[ ! -f "/lib/modules/$(uname -r)/kernel/drivers/net/wireless/88XXau.ko" ]]; then
   echo " -- INSTALLING Realtek rtl8814au drivers -- "
   sudo apt install -y raspberrypi-kernel-headers bc
 
