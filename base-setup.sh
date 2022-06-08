@@ -31,7 +31,8 @@ echo " -- INSTALLING configs -- "
 # .bashrc - bash config file
 # .bash_prompt - sourced from .bashrc to set up a colorful prompt
 cp -v "$CONFIG_DIR/.bashrc" "$CONFIG_DIR/.bash_prompt" "$HOME"
-
+# .vimrc - vim configuration file
+cp -v "$CONFIG_DIR/.vimrc" "$HOME"
 
 # get immediate use of new .bashrc
 source "$HOME/.bashrc"
