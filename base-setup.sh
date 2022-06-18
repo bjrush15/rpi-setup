@@ -70,7 +70,7 @@ fi
 echo INFO "INSTALLING base apt packages"
 # install base tools
 # stress - simple CPU stress test tool (testing Glances)
-apt install -y vim tmux stress
+apt install -y vim tmux stress dnsutils
 
 # install realtek rtl8814au drivers (For Alfa AWUS1900 wireless card)
 # instructions from https://davidtavarez.github.io/2018/re4son_kernel_raspberry_pi/
@@ -131,6 +131,9 @@ else
   echo INFO "DISABLE DHCP on wlan1 \(external wireless\) and eth1 \(USB ethernet\)"
   builtin echo "denyinterfaces wlan1 eth1" >> /etc/dhcpcd.conf
 fi
+
+echo INFO "Setting up nameserver configuration"
+cp -v $CONFIG_DIR/resolv.conf /etc/resolv.conf
 
 echo GOOD "DONE! Reboot for all changes to take effect"
 if [ "$AUTO_REBOOT" = 1 ]; then
