@@ -1,7 +1,7 @@
-from arm32v7/alpine
+from alpine:latest
 
 # install + update
-run apk update && apk add hostapd iptables
+run apk update && apk upgrade && apk add hostapd iptables
 
 # configure hostapd
 add configs/hostapd.conf /etc/hostapd/hostapd.conf
