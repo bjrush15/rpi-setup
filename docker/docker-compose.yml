@@ -29,4 +29,14 @@ services:
     environment:
       - "GLANCES_OPT=-w"
 
-  # 
+  # Add NFS
+  # https://hub.docker.com/r/itsthenetwork/nfs-server-alpine
+  nfs:
+    image: itsthenetwork/nfs-server-alpine:latest-arm
+    container_name: nfs
+    volumes:
+      - /exposed:/exposed
+    environment:
+      - "SHARED_DIRECTORY=/exposed"
+    privileged: true
+    network_mode: host
