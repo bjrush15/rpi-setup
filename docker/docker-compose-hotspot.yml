@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+
+  # configure hotspot AP and dnsmasq for dhcp/dns
+  hostapd:
+    build: ./hostapd
+    container_name: hostapd
+    cap_add:
+      - NET_ADMIN
+    network_mode: host
+
+  dnsmasq:
+    build: ./dnsmasq
+    container_name: dnsmasq
+    cap_add:
+      - NET_ADMIN
+    network_mode: host
+    depends_on:
+      - hostapd
+
+    # add nginx reverse proxy
+  nginx:
+    image: nginx
+    container_name: nginx
+    volumes:
+      - ./nginx/configs/:/etc/nginx/conf.d/
