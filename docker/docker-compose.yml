@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  # add nginx reverse proxy
+  # ENSURE that any domains defined in config files
+  # use the hostname as defined in this file
+  # e.g http://glances:61208
+  # 'glances' MUST match the container_name of the service
+  # you're trying to reach
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/configs/:/etc/nginx/conf.d/
+
+  # use glances for monitoring (similar to htop)
+  # This section is mostly lifted from
+  # https://glances.readthedocs.io/en/latest/docker.html
+  # TODO: add password?
+  glances:
+    image: nicolargo/glances:alpine-latest
+    container_name: glances
+    restart: always
+    pid: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - "GLANCES_OPT=-w"
+
+  # 
