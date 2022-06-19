@@ -1,0 +1,110 @@
+version: '3.9'
+
+x-environment:
+  &taiga-back-environment
+  POSTGRES_DB: taiga
+  POSTGRES_USER: taskman
+  POSTGRES_PASSWORD: busybusyboy
+  POSTGRES_HOST: taiga-db
+  TAIGA_SECRET_KEY: "whowouldwantthesejobsanyway"
+  TAIGA_SITES_DOMAIN: "http://taiga.greenhouse.lan"
+  TAIGA_SITES_SCHEME: "http"
+  RABBITMQ_USER: engergizerbunny
+  RABBITMQ_PASS: zoomzoom
+  ENABLE_TELEMETRY: "False"
+x-volumes:
+  &taiga-back-volumes
+  - /taiga-static-data:/taiga-back/static
+  - /taiga-media-data:/taiga-back/media
+
+services:
+  # Add Taiga - a JIRA-like task manager
+  # https://github.com/kaleidos-ventures/taiga-docker/
+  # 
+  # needs to be build for arm64 - this repo is precompiled:
+  # https://github.com/gianlucadest/taiga-docker
+  #
+  #
+  # NOTE: For first time run, a super user must be created
+  # sudo docker exec -it taiga-back python manage.py createsuperuser
+  # or interactively through a shell
+  #
+  ##
+  taiga-db:
+    image: postgres:13.7-alpine
+    container_name: taiga-db
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: taiga
+      POSTGRES_USER: taskman
+      POSTGRES_PASSWORD: busybusyboy
+    volumes:
+      - /taiga-db:/var/lib/postgresql/data
+
+
+  taiga-back:
+    image: gdest94/taiga-back:latest
+    container_name: taiga-back
+    environment: *taiga-back-environment
+    volumes: *taiga-back-volumes
+    depends_on:
+      - taiga-db
+      - taiga-events-rabbitmq
+      - taiga-async-rabbitmq
+
+  taiga-async:
+    image: gdest94/taiga-back:latest
+    container_name: taiga-async
+    entrypoint: ["/taiga-back/docker/async_entrypoint.sh"]
+    environment: *taiga-back-environment
+    volumes: *taiga-back-volumes
+    depends_on:
+      - taiga-db
+      - taiga-back
+      - taiga-async-rabbitmq
+
+  taiga-async-rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq-async
+    environment:
+      RABBITMQ_DEFAULT_USER: engergizerbunny
+      RABBITMQ_DEFAULT_PASS: zoomzoom
+      RABBITMQ_DEFAULT_VHOST: taiga
+    volumes:
+      - /taiga-async-rabbitmq-data:/var/lib/rabbitmq
+
+  taiga-front:
+    image: gdest94/taiga-front:latest
+    container_name: taiga-front
+    environment:
+      TAIGA_URL: "http://taiga.greenhouse.lan"
+      TAIGA_WEBSOCKETS_URL: "ws://taiga.greenhouse.lan"
+
+  taiga-events:
+    image: gdest94/taiga-events:latest
+    container_name: taiga-events
+    environment:
+      RABBITMQ_PASS: energizerbunny
+      RABBITMQ_PASS: zoomzoom
+      TAIGA_SECRET_KEY: "whowouldwantthesejobsanyway"
+    depends_on:
+      - taiga-events-rabbitmq
+    
+  taiga-events-rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq_events
+    environment:
+      RABBITMQ_DEFAULT_USER: engergizerbunny
+      RABBITMQ_DEFAULT_PASS: zoomzoom
+      RABBITMQ_DEFAULT_VHOST: taiga
+    volumes:
+      - /taiga-events-rabbitmq-data:/var/lib/rabbitmq
+
+  taiga-protected:
+    image: gdest94/taiga-protected:latest
+    container_name: taiga-protected
+    environment:
+      MAX_AGE: 360
+      SECRET_KEY: "whowouldwantthesejobsanyway"
+  ## END TAIGA
