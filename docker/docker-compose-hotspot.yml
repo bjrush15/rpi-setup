@@ -18,10 +18,3 @@ services:
     network_mode: host
     depends_on:
       - hostapd
-
-    # add nginx reverse proxy
-  nginx:
-    image: nginx
-    container_name: nginx
-    volumes:
-      - ./nginx/configs/:/etc/nginx/conf.d/
