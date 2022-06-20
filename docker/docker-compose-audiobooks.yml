@@ -1,0 +1,16 @@
+version: '3.9'
+
+
+# add audiobooksh
+# https://github.com/advplyr/audiobookshelf
+services:
+  audiobookshelf:
+    container_name: audiobooks
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    environment:
+      - AUDIOBOOKSHELF_UID=99
+      - AUDIOBOOKSHELF_GID=100
+    ports:
+      - 13378:80
+    volumes:
+      - /exposed/audiobooks:/audiobooks
