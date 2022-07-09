@@ -78,7 +78,7 @@ apt install -y vim tmux stress dnsutils
 if [[ ! -f "/lib/modules/$(uname -r)/kernel/drivers/net/wireless/88XXau.ko" ]]; then
   # Build prereqs
   apt install -y raspberrypi-kernel-headers bc
-  git clone https://github.com/aircrack-ng/rtl8812au "$ADMIN_HOME"
+  git clone https://github.com/aircrack-ng/rtl8812au "$ADMIN_HOME/rtl8812au"
   cd "$ADMIN_HOME/rtl8812au"
   echo INFO "BUILDING Realtek rtl8814au drivers"
   make RTL8814=1
@@ -119,17 +119,17 @@ fi
 echo INFO "SETTING hostname to $HOSTNAME"
 builtin echo "$HOSTNAME" > /etc/hostname
 
-echo INFO "ENABLE IPv4 forwarding"
+echo INFO "ENABLING IPv4 forwarding"
 sed -i 's/#net.ipv4.ip_forward/net.ipv4.ip_forward/' /etc/sysctl.conf
 
 echo INFO "DISABLING builtin wireless \(wlan0\)"
 rfkill block 0
 
-if grep "denyinterfaces wlan1 eth1" /etc/dhcpcd.conf; then 
+if grep "denyinterfaces wlan0 wlan1 eth1" /etc/dhcpcd.conf; then 
   echo INFO "SKIPPING disabling dhcp on eth1/wlan1 - already disabled"
 else
-  echo INFO "DISABLE DHCP on wlan1 \(external wireless\) and eth1 \(USB ethernet\)"
-  builtin echo "denyinterfaces wlan1 eth1" >> /etc/dhcpcd.conf
+  echo INFO "DISABLING DHCP on wlan0 \(disabled internal wireless\) wlan1 \(external wireless\) and eth1 \(USB ethernet\)"
+  builtin echo "denyinterfaces wlan0 wlan1 eth1" >> /etc/dhcpcd.conf
 fi
 
 echo INFO "Setting up nameserver configuration"
