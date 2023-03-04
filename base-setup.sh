@@ -91,11 +91,7 @@ fi
 
 echo INFO "INSTALLING configs"
 # move dot files into home directory
-# .bashrc - bash config file
-# .bash_prompt - sourced from .bashrc to set up a colorful prompt
-cp -v "$CONFIG_DIR/.bashrc" "$CONFIG_DIR/.bash_prompt" "$ADMIN_HOME"
-# .vimrc - vim configuration file
-cp -v "$CONFIG_DIR/.vimrc" "$ADMIN_HOME"
+cp -vr "$CONFIG_DIR" "$ADMIN_HOME"
 
 # get immediate use of new .bashrc
 . "$ADMIN_HOME/.bashrc"
