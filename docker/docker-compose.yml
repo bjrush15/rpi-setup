@@ -15,11 +15,16 @@ services:
     ports:
       - 80:80
     volumes:
-      - ./nginx/configs/:/etc/nginx/conf.d/
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/www/:/data/www/
+        #- ./nginx/keys/:/etc/ssl/private/
+        #- ./nginx/certs/:/etc/ssl/certs/
+        #- ./nginx/snippets:/etc/nginx/snippets/
 
   # use glances for monitoring (similar to htop)
   # This section is mostly lifted from
   # https://glances.readthedocs.io/en/latest/docker.html
+  # default port: 61208
   # TODO: add password?
   glances:
     image: nicolargo/glances:alpine-latest
