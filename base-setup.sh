@@ -19,7 +19,7 @@ function dump-args() {
 # make sure we're running as root
 echo INFO "I am $(whoami)"
 if [[ "$UID" -ne "0" ]]; then
-  echo WARN "REQUESTING \${RED}ROOT\${NOCOLOR} access"
+  echo WARN "REQUESTING \${RED}ROOT\${NOCOLOR} ACCESS"
   exec sudo "$0" "$@"
   exit 0
 fi
@@ -70,7 +70,7 @@ fi
 echo INFO "INSTALLING base apt packages"
 # install base tools
 # stress - simple CPU stress test tool (testing Glances)
-apt install -y vim tmux stress dnsutils
+apt install -y vim tmux stress dnsutils acl tvnamer traceroute
 
 # install realtek rtl8814au drivers (For Alfa AWUS1900 wireless card)
 # instructions from https://davidtavarez.github.io/2018/re4son_kernel_raspberry_pi/
@@ -136,3 +136,11 @@ if [ "$AUTO_REBOOT" = 1 ]; then
   echo GOOD "REBOOTING now"
   reboot
 fi
+
+echo INFO "Creating users"
+id -u jellyfin > /dev/null 2>&1 || useradd -s $(which nologin) -d /data/jellyfin -r jellyfin
+id -u audiobookshelf > /dev/null 2>&1 || useradd -s $(which nologin) -d /data/audiobookshelf -r audiobookshelf
+id -u www > /dev/null 2>&1 || useradd -s $(which nologin) -d /data/www -r www
+
+echo INFO "Pulling m4b-tool"
+docker pull sandreas/m4b-tool:latest

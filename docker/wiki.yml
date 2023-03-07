@@ -1,0 +1,15 @@
+version: "2.1"
+services:
+  wikijs:
+    image: lscr.io/linuxserver/wikijs:latest
+    container_name: wikijs
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=US
+    volumes:
+      - /data/wiki/config:/config
+      - /data/wiki/data:/data
+        #ports:
+        #- 3000:3000
+    restart: unless-stopped

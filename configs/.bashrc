@@ -130,3 +130,4 @@ alias sway="$(which sway) --my-next-gpu-wont-be-nvidia"
 alias sg='ssh admin@greenhouse.lan'
 alias pg='ping google.com'
 alias p8='ping 8.8.8.8'
+alias m4b-tool='docker run -it --rm -u $(id -u):$(id -g) -v "$(pwd)":/mnt sandreas/m4b-tool:latest'

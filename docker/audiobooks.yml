@@ -8,10 +8,10 @@ services:
     container_name: audiobooks
     image: ghcr.io/advplyr/audiobookshelf:latest
     environment:
-      - AUDIOBOOKSHELF_UID=99
-      - AUDIOBOOKSHELF_GID=100
+      - AUDIOBOOKSHELF_UID=997
+      - AUDIOBOOKSHELF_GID=992
     volumes:
-      - /exposed/audiobooks:/audiobooks
-      - /exposed/podcasts:/podcasts
-      - /audiobookshelf/config:/config
-      - /audiobookshelf/metadata:/metadata
+      - /data/audiobookshelf/audiobooks:/audiobooks
+      - /data/audiobookshelf/podcasts:/podcasts
+      - /data/audiobookshelf/config:/config
+      - /data/audiobookshelf/metadata:/metadata
