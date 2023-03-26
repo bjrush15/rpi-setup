@@ -1,0 +1,6 @@
+version: '3.9'
+
+services:
+  dr4ft:
+    build: ./dr4ft
+    container_name: dr4ft

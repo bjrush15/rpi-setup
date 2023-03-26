@@ -1,0 +1,20 @@
+# Welcome to Dashy! To get started, run `docker compose up -d`
+# You can configure your container here, by modifying this file
+version: "3.8"
+services:
+  dashy:
+    container_name: Dashy
+    image: lissy93/dashy
+    volumes:
+      - /data/dashy/config.yml:/app/public/conf.yml
+      - /data/item-icons:/app/public/item-icons
+    environment:
+      - NODE_ENV=production
+      - UID=1000
+      - GID=1000
+    dns:
+      - 192.168.69.1
+      - 1.1.1.1
+
+    # Specify restart policy
+    restart: unless-stopped
