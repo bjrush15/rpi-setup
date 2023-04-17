@@ -5,7 +5,7 @@ set -e
 HOSTNAME="greenhouse"
 SKIP_APT_PACKAGES=0
 SKIP_APT_UPDATE=0
-DO_APT_UPGRADE=1
+SKIP_APT_UPGRADE=1
 ADMIN_USER=admin
 ADMIN_HOME="$(eval builtin echo ~$ADMIN_USER)"
 CONFIG_DIR="$ADMIN_HOME/rpi-setup/configs"
@@ -33,7 +33,7 @@ function main() {
 
 function parse-args() {
   # handle arguments
-  params="$(getopt -o "" --long skip-apt-packages:,skip-apt-update:,do-apt-upgrade:,hostname:,admin-username:,config-dir:,data-dir: -n base-setup.sh -- "$@")"
+  params="$(getopt -o "" --long no-apt,skip-apt-packages:,skip-apt-update:,skip-apt-upgrade:,hostname:,admin-username:,config-dir:,data-dir: -n base-setup.sh -- "$@")"
   eval set -- "$params"
   unset params
 
@@ -45,9 +45,14 @@ function parse-args() {
       --skip-apt-update)
         SKIP_APT_UPDATE=$2
         shift 2;;
-      --do-apt-upgrade)
-        DO_APT_UPGRADE=$2
+      --skip-apt-upgrade)
+        SKIP_APT_UPGRADE=$2
         shift 2;;
+      --no-apt)
+        SKIP_APT_PACKAGES=1
+        SKIP_APT_UPDATE=1
+        DO_APT_UPGRADE=0
+        shift 1;;
       --hostname)
         HOSTNAME=$2
         shift 2;;
@@ -129,7 +134,7 @@ function install-realtek-wifi-driver() {
     git clone https://github.com/aircrack-ng/rtl8812au "$ADMIN_HOME/rtl8812au"
     cd "$ADMIN_HOME/rtl8812au"
     echo INFO "BUILDING Realtek rtl8814au drivers"
-    make RTL8814=1
+    make RTL8814=1 -j4
     echo GOOD "INSTALLING Realtek rtl8814au drivers"
     make install RTL8814=1
     cd -
@@ -142,9 +147,11 @@ function install-realtek-wifi-driver() {
 
 function install-and-activate-dot-files() {
   echo INFO "INSTALLING configs"
+  shopt -s dotglob
   # move dot files into home directory
-  cp -vr "$CONFIG_DIR"/* "$ADMIN_HOME"
+  cp -vr "$CONFIG_DIR/"* "$ADMIN_HOME"
   # get immediate use of new .bashrc
+  shopt -u dotglob
 . "$ADMIN_HOME/.bashrc"
 }
 
@@ -231,7 +238,7 @@ function create-all-users() {
   echo INFO "Creating users"
   check-and-create-user jellyfin
   check-and-create-user audiobookshelf
-  check-and-create-users www
+  check-and-create-user www
 }
 
 function check-and-create-user() {
