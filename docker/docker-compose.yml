@@ -1,8 +1,34 @@
-version: '3.9'
+version: "3.9"
+
+# add audiobooksh
+# https://github.com/advplyr/audiobookshelf
+services:
+  audiobookshelf:
+    container_name: audiobooks
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    environment:
+      - AUDIOBOOKSHELF_UID=997
+      - AUDIOBOOKSHELF_GID=992
+    volumes:
+      - /data/audiobookshelf/audiobooks:/audiobooks
+      - /data/audiobookshelf/podcasts:/podcasts
+      - /data/audiobookshelf/config:/config
+      - /data/audiobookshelf/metadata:/metadata
+
+  dashy:
+    container_name: dashy
+    image: lissy93/dashy
+    volumes:
+      - /data/dashy/config.yml:/app/public/conf.yml
+      - /data/item-icons:/app/public/item-icons
+    environment:
+      - NODE_ENV=production
+      - UID=1000
+      - GID=1000
+    restart: unless-stopped
 
 # starts system services e.g nginx/monitoring/home page
 
-services:
   # add nginx reverse proxy
   # ENSURE that any domains defined in config files
   # use the hostname as defined in this file
@@ -16,10 +42,12 @@ services:
       - 80:80
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/www/:/data/www/
         #- ./nginx/keys/:/etc/ssl/private/
         #- ./nginx/certs/:/etc/ssl/certs/
         #- ./nginx/snippets:/etc/nginx/snippets/
+    restart: unless-stopped
 
   # use glances for monitoring (similar to htop)
   # This section is mostly lifted from
@@ -29,9 +57,105 @@ services:
   glances:
     image: nicolargo/glances:alpine-latest
     container_name: glances
-    restart: always
+    restart: unless-stopped
     pid: host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - "GLANCES_OPT=-w"
+
+  draft:
+    build: ./draft
+    container_name: draft
+
+  # Add NFS
+  # https://hub.docker.com/r/itsthenetwork/nfs-server-alpine
+  nfs:
+    image: itsthenetwork/nfs-server-alpine:latest-arm
+    container_name: nfs
+    volumes:
+      - /data:/data:z
+    environment:
+      - "SHARED_DIRECTORY=/data"
+    privileged: true
+    network_mode: host
+    restart: unless-stopped
+
+  # Add Samba for Windows peeps
+  # https://hub.docker.com/r/dperson/samba
+  # config mostly lifted from: https://github.com/dperson/samba/blob/master/docker-compose.yml
+  #1  samba:
+  #1    image: dperson/samba
+  #1    container_name: samba
+  #1    restart: always
+  #1    command: " -u 'dataman;ilikemesomedata' -u 'public;4publicaccess' -s 'data;/exposed;yes;no;yes;all;none;dataman,public;' -n -r"
+  #1    ports:
+  #1      - "137:137/udp"
+  #1      - "138:138/udp"
+  #1      - "139:139/tcp"
+  #1      - "445:445/tcp"
+  #1    volumes:
+  #1      - /exposed:/exposed:z
+
+
+  # configure hotspot AP and dnsmasq for dhcp/dns
+  hostapd:
+    build: ./hostapd
+    container_name: hostapd
+    cap_add:
+      - NET_ADMIN
+    network_mode: host
+    restart: always
+
+  dnsmasq:
+    build: ./dnsmasq
+    container_name: dnsmasq
+    cap_add:
+      - NET_ADMIN
+    network_mode: host
+    depends_on:
+      - hostapd
+    restart: always
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=999
+      - PGID=994
+      - TZ=US
+        #- JELLYFIN_PublishedServerUrl=192.168.0.5 #optional
+    volumes:
+      - /data/jellyfin/config:/config
+      - /data/jellyfin/shows:/data/tvshows
+      - /data/jellyfin/movies:/data/movies
+    ports:
+      - 8096:8096
+      - 8920:8920 #optional
+      - 7359:7359/udp #optional
+      - 1900:1900/udp #optional
+    restart: unless-stopped
+
+
+  # configure hotspot AP and dnsmasq for dhcp/dns
+  openvpn:
+    build: ./openvpn
+    container_name: openvpn
+    cap_add:
+      - NET_ADMIN
+    network_mode: host
+    restart: unless-stopped
+
+  wikijs:
+    image: lscr.io/linuxserver/wikijs:latest
+    container_name: wikijs
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=US
+    volumes:
+      - /data/wiki/config:/config
+      - /data/wiki/data:/data
+        #ports:
+        #- 3000:3000
+    restart: always
