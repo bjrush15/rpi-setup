@@ -30,5 +30,5 @@ __prompt_command() {
   else
     exit_code_color="$RED"
   fi
-  PS1="[$CYAN\t$RESET]-[$user_color$BOLD\u$RESET$BLUE@$YELLOW\H$RESET]-[$BLUE\w$RESET]-[$exit_code_color$last_exit_code$RESET]\$ "
+  PS1="[$CYAN\t$RESET]-[$user_color$BOLD\u$RESET$BLUE@$YELLOW\H$RESET]-[$BLUE\w$RESET]$(__git_ps1 -[$GREEN%s$RESET])-[$exit_code_color$last_exit_code$RESET]\$ "
 }
