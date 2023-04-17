@@ -1,7 +1,7 @@
 from alpine:latest
 
 # install + update
-run apk update && apk upgrade && apk add openvpn
+run apk update && apk upgrade && apk add openvpn iptables
 
 # download nordvpn openvpn configs
 run mkdir ovpn
