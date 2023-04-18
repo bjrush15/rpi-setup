@@ -14,6 +14,7 @@ services:
       - /data/audiobookshelf/podcasts:/podcasts
       - /data/audiobookshelf/config:/config
       - /data/audiobookshelf/metadata:/metadata
+    restart: always
 
   dashy:
     container_name: dashy
@@ -25,7 +26,7 @@ services:
       - NODE_ENV=production
       - UID=1000
       - GID=1000
-    restart: unless-stopped
+    restart: always
 
 # starts system services e.g nginx/monitoring/home page
 
@@ -39,15 +40,16 @@ services:
     image: nginx
     container_name: nginx
     ports:
-      - 80:80
+      #- 80:80
+      - 443:443
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/www/:/data/www/
-        #- ./nginx/keys/:/etc/ssl/private/
-        #- ./nginx/certs/:/etc/ssl/certs/
-        #- ./nginx/snippets:/etc/nginx/snippets/
-    restart: unless-stopped
+      - ./nginx/keys/:/etc/ssl/private/
+      - ./nginx/certs/:/etc/ssl/certs/
+      - ./nginx/snippets:/etc/nginx/snippets/
+    restart: always
 
   # use glances for monitoring (similar to htop)
   # This section is mostly lifted from
@@ -63,10 +65,12 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - "GLANCES_OPT=-w"
+    restart: always
 
   draft:
     build: ./draft
     container_name: draft
+    restart: always
 
   # Add NFS
   # https://hub.docker.com/r/itsthenetwork/nfs-server-alpine
@@ -79,7 +83,7 @@ services:
       - "SHARED_DIRECTORY=/data"
     privileged: true
     network_mode: host
-    restart: unless-stopped
+    restart: always
 
   # Add Samba for Windows peeps
   # https://hub.docker.com/r/dperson/samba
@@ -129,12 +133,7 @@ services:
       - /data/jellyfin/config:/config
       - /data/jellyfin/shows:/data/tvshows
       - /data/jellyfin/movies:/data/movies
-    ports:
-      - 8096:8096
-      - 8920:8920 #optional
-      - 7359:7359/udp #optional
-      - 1900:1900/udp #optional
-    restart: unless-stopped
+    restart: always
 
 
   # configure hotspot AP and dnsmasq for dhcp/dns
@@ -144,7 +143,7 @@ services:
     cap_add:
       - NET_ADMIN
     network_mode: host
-    restart: unless-stopped
+    restart: always
 
   wikijs:
     image: lscr.io/linuxserver/wikijs:latest
@@ -156,6 +155,4 @@ services:
     volumes:
       - /data/wiki/config:/config
       - /data/wiki/data:/data
-        #ports:
-        #- 3000:3000
     restart: always
