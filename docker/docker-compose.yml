@@ -16,18 +16,6 @@ services:
       - /data/audiobookshelf/metadata:/metadata
     restart: always
 
-  dashy:
-    container_name: dashy
-    image: lissy93/dashy
-    volumes:
-      - /data/dashy/config.yml:/app/public/conf.yml
-      - /data/item-icons:/app/public/item-icons
-    environment:
-      - NODE_ENV=production
-      - UID=1000
-      - GID=1000
-    restart: always
-
 # starts system services e.g nginx/monitoring/home page
 
   # add nginx reverse proxy
@@ -154,4 +142,14 @@ services:
     volumes:
       - /data/wiki/config:/config
       - /data/wiki/data:/data
+    restart: always
+
+  homepage:
+    image: ghcr.io/benphelps/homepage:latest
+    container_name: homepage
+    extra_hosts:
+      - "greenhouse.lan:192.168.70.1"
+    volumes:
+      - /data/homepage/config:/app/config # Make sure your local config directory exists
+      - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations
     restart: always
