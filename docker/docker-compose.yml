@@ -59,7 +59,6 @@ services:
   glances:
     image: nicolargo/glances:alpine-latest
     container_name: glances
-    restart: unless-stopped
     pid: host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
