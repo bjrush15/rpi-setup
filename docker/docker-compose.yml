@@ -30,6 +30,7 @@ services:
     ports:
       #- 80:80
       - 443:443
+      - 5432:5432 # postgres
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/conf.d:/etc/nginx/conf.d
@@ -152,4 +153,24 @@ services:
     volumes:
       - /data/homepage/config:/app/config # Make sure your local config directory exists
       - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations
+    restart: always
+
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: root
+      POSTGRES_DB: testing
+    restart: always
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    command: php -S 0.0.0.0:8080 -t /var/www/html
+    environment:
+      ADMINER_DESIGN: dracula
+    extra_hosts:
+      - "greenhouse.lan:192.168.70.1"
     restart: always
