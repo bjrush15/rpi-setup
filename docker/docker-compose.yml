@@ -174,3 +174,43 @@ services:
     extra_hosts:
       - "greenhouse.lan:192.168.70.1"
     restart: always
+
+
+      #wireguard:
+      #  image: lscr.io/linuxserver/wireguard
+      #  container_name: wireguard
+      #  restart: always
+      #  cap_add:
+      #    - NET_ADMIN
+      #  network_mode: host
+      #  environment:
+      #    - SERVERURL=woodshed.cc
+      #    - SERVERPORT=51820
+      #    - PEERS=laptop,phone
+      #    - PEERDNS=192.168.70.1
+      #    - INTERNAL_SUBNET=10.13.13.0
+      #  volumes:
+      #    - /lib/modules:/lib/modules
+      #    - /data/wireguard:/config
+
+
+  wireguard:
+    image: lscr.io/linuxserver/wireguard:latest
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+      - SERVERURL=woodshed.cc #192.168.70.1 #optional
+      - SERVERPORT=51820 #optional
+      - PEERS=laptop,phone #optional
+      - INTERNAL_SUBNET= 192.168.68.0 #optional
+      - ALLOWEDIPS=0.0.0.0/0 #optional
+    volumes:
+      - /data/wireguard:/config
+      - /lib/modules:/lib/modules #optional
+    network_mode: host
+    restart: always
