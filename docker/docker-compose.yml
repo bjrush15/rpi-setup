@@ -131,7 +131,7 @@ services:
     cap_add:
       - NET_ADMIN
     network_mode: host
-    restart: always
+    restart: unless-stopped # disabled until interplay with wireguard is fixed
 
   wikijs:
     image: lscr.io/linuxserver/wikijs:latest
@@ -195,7 +195,7 @@ services:
 
 
   wireguard:
-    image: lscr.io/linuxserver/wireguard:latest
+    image: lscr.io/linuxserver/wireguard
     container_name: wireguard
     cap_add:
       - NET_ADMIN
@@ -206,7 +206,8 @@ services:
       - TZ=America/Los_Angeles
       - SERVERURL=woodshed.cc #192.168.70.1 #optional
       - SERVERPORT=51820 #optional
-      - PEERS=laptop,phone #optional
+      - PEERS=laptop #optional
+      - PEERDNS=192.168.70.1
       - INTERNAL_SUBNET= 192.168.68.0 #optional
       - ALLOWEDIPS=0.0.0.0/0 #optional
     volumes:
