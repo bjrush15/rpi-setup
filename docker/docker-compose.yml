@@ -165,17 +165,6 @@ services:
       POSTGRES_DB: testing
     restart: always
 
-  adminer:
-    image: adminer
-    container_name: adminer
-    command: php -S 0.0.0.0:8080 -t /var/www/html
-    environment:
-      ADMINER_DESIGN: dracula
-    extra_hosts:
-      - "greenhouse.lan:192.168.70.1"
-    restart: always
-
-
       #wireguard:
       #  image: lscr.io/linuxserver/wireguard
       #  container_name: wireguard
