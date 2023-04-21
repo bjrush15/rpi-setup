@@ -1,8 +1,12 @@
 version: "3.9"
 
-# add audiobooksh
-# https://github.com/advplyr/audiobookshelf
+
+# TODO: lock down UID/GID
+
 services:
+
+### WEB APPS ###
+  # https://github.com/advplyr/audiobookshelf
   audiobookshelf:
     container_name: audiobooks
     image: ghcr.io/advplyr/audiobookshelf:latest
@@ -16,34 +20,58 @@ services:
       - /data/audiobookshelf/metadata:/metadata
     restart: always
 
-# starts system services e.g nginx/monitoring/home page
 
-  # add nginx reverse proxy
-  # ENSURE that any domains defined in config files
-  # use the hostname as defined in this file
-  # e.g http://glances:61208
-  # 'glances' MUST match the container_name of the service
-  # you're trying to reach
-  nginx:
-    image: nginx
-    container_name: nginx
-    ports:
-      #- 80:80
-      - 443:443
-      - 5432:5432 # postgres
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/www/:/data/www/
-      - ./nginx/keys/:/etc/ssl/private/
-      - ./nginx/certs/:/etc/ssl/certs/
-      - ./nginx/snippets:/etc/nginx/snippets/
+  # MTG draft - dr4ft.info
+  draft:
+    build: ./draft
+    container_name: draft
     restart: always
 
+
+  # Launcher page. Server status, webapp management
+  homepage:
+    image: ghcr.io/benphelps/homepage:latest
+    container_name: homepage
+    extra_hosts:
+      - "greenhouse.lan:192.168.70.1" # Needs the extra host. If excluded, you have to reference health-check services by docker container
+    volumes:
+      - /data/homepage/config:/app/config # Make sure your local config directory exists
+      - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations
+    restart: always
+
+
+  # Movie/show streaming
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=999
+      - PGID=994
+      - TZ=US
+    volumes:
+      - /data/jellyfin/config:/config
+      - /data/jellyfin/shows:/data/tvshows
+      - /data/jellyfin/movies:/data/movies
+    restart: always
+
+
+  # Self hosted wiki - as the name implies
+  wikijs:
+    image: lscr.io/linuxserver/wikijs:latest
+    container_name: wikijs
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=US
+    volumes:
+      - /data/wiki/config:/config
+      - /data/wiki/data:/data
+    restart: always
+
+
+### SYSTEM SERVICES ###
   # use glances for monitoring (similar to htop)
-  # This section is mostly lifted from
   # https://glances.readthedocs.io/en/latest/docker.html
-  # default port: 61208
   # TODO: add password?
   glances:
     image: nicolargo/glances:alpine-latest
@@ -55,10 +83,6 @@ services:
       - "GLANCES_OPT=-w"
     restart: always
 
-  draft:
-    build: ./draft
-    container_name: draft
-    restart: always
 
   # Add NFS
   # https://hub.docker.com/r/itsthenetwork/nfs-server-alpine
@@ -73,24 +97,53 @@ services:
     network_mode: host
     restart: always
 
+
+  # Webserver
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      #- 80:80 # uncomment to enable http
+      - 443:443 # https
+      - 5432:5432 # postgres
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/www/:/data/www/
+      - ./nginx/keys/:/etc/ssl/private/
+      - ./nginx/certs/:/etc/ssl/certs/
+      - ./nginx/snippets:/etc/nginx/snippets/
+    restart: always
+
+
   # Add Samba for Windows peeps
   # https://hub.docker.com/r/dperson/samba
-  # config mostly lifted from: https://github.com/dperson/samba/blob/master/docker-compose.yml
-  #1  samba:
-  #1    image: dperson/samba
-  #1    container_name: samba
-  #1    restart: always
-  #1    command: " -u 'dataman;ilikemesomedata' -u 'public;4publicaccess' -s 'data;/exposed;yes;no;yes;all;none;dataman,public;' -n -r"
-  #1    ports:
-  #1      - "137:137/udp"
-  #1      - "138:138/udp"
-  #1      - "139:139/tcp"
-  #1      - "445:445/tcp"
-  #1    volumes:
-  #1      - /exposed:/exposed:z
+  #  samba:
+  #    image: dperson/samba
+  #    container_name: samba
+  #    restart: always
+  #    command: " -u 'dataman;ilikemesomedata' -u 'public;4publicaccess' -s 'data;/exposed;yes;no;yes;all;none;dataman,public;' -n -r"
+  #    ports:
+  #      - "137:137/udp"
+  #      - "138:138/udp"
+  #      - "139:139/tcp"
+  #      - "445:445/tcp"
+  #    volumes:
+  #      - /exposed:/exposed:z
 
 
-  # configure hotspot AP and dnsmasq for dhcp/dns
+### NETWORKING SERVICES ###
+  # dns/dhcp server
+  dnsmasq:
+    build: ./dnsmasq
+    container_name: dnsmasq
+    cap_add:
+      - NET_ADMIN
+    network_mode: host
+    restart: always
+
+
+  # configure hotspot AP
   hostapd:
     build: ./hostapd
     container_name: hostapd
@@ -99,32 +152,8 @@ services:
     network_mode: host
     restart: always
 
-  dnsmasq:
-    build: ./dnsmasq
-    container_name: dnsmasq
-    cap_add:
-      - NET_ADMIN
-    network_mode: host
-    depends_on:
-      - hostapd
-    restart: always
 
-  jellyfin:
-    image: lscr.io/linuxserver/jellyfin:latest
-    container_name: jellyfin
-    environment:
-      - PUID=999
-      - PGID=994
-      - TZ=US
-        #- JELLYFIN_PublishedServerUrl=192.168.0.5 #optional
-    volumes:
-      - /data/jellyfin/config:/config
-      - /data/jellyfin/shows:/data/tvshows
-      - /data/jellyfin/movies:/data/movies
-    restart: always
-
-
-  # configure hotspot AP and dnsmasq for dhcp/dns
+  # openvpn connection to the outside world
   openvpn:
     build: ./openvpn
     container_name: openvpn
@@ -133,29 +162,8 @@ services:
     network_mode: host
     restart: unless-stopped # disabled until interplay with wireguard is fixed
 
-  wikijs:
-    image: lscr.io/linuxserver/wikijs:latest
-    container_name: wikijs
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=US
-    volumes:
-      - /data/wiki/config:/config
-      - /data/wiki/data:/data
-    restart: always
 
-  homepage:
-    image: ghcr.io/benphelps/homepage:latest
-    container_name: homepage
-    extra_hosts:
-      - "greenhouse.lan:192.168.70.1"
-    volumes:
-      - /data/homepage/config:/app/config # Make sure your local config directory exists
-      - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations
-    restart: always
-
-
+  # db connection
   postgres:
     image: postgres
     container_name: postgres
@@ -165,24 +173,8 @@ services:
       POSTGRES_DB: testing
     restart: always
 
-      #wireguard:
-      #  image: lscr.io/linuxserver/wireguard
-      #  container_name: wireguard
-      #  restart: always
-      #  cap_add:
-      #    - NET_ADMIN
-      #  network_mode: host
-      #  environment:
-      #    - SERVERURL=woodshed.cc
-      #    - SERVERPORT=51820
-      #    - PEERS=laptop,phone
-      #    - PEERDNS=192.168.70.1
-      #    - INTERNAL_SUBNET=10.13.13.0
-      #  volumes:
-      #    - /lib/modules:/lib/modules
-      #    - /data/wireguard:/config
 
-
+  # VPN connection from the outside world to lan
   wireguard:
     image: lscr.io/linuxserver/wireguard
     container_name: wireguard
@@ -193,14 +185,14 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=America/Los_Angeles
-      - SERVERURL=woodshed.cc #192.168.70.1 #optional
-      - SERVERPORT=51820 #optional
-      - PEERS=laptop #optional
+      - SERVERURL=woodshed.cc
+      - SERVERPORT=51820
+      - PEERS=laptop
       - PEERDNS=192.168.70.1
-      - INTERNAL_SUBNET= 192.168.68.0 #optional
-      - ALLOWEDIPS=0.0.0.0/0 #optional
+      - INTERNAL_SUBNET= 192.168.68.0
+      - ALLOWEDIPS=0.0.0.0/0
     volumes:
       - /data/wireguard:/config
-      - /lib/modules:/lib/modules #optional
+      - /lib/modules:/lib/modules
     network_mode: host
     restart: always
