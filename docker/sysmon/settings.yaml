@@ -1,0 +1,18 @@
+influxdb:
+  server: <SERVER>
+  token: <TOKEN>
+  bucket: system-monitor
+  org: system-monitor
+
+network_speedtest:
+  measurement: net-updown
+  monitor_rate: 30m
+
+cpu_monitor:
+  measurement: cpu-stats
+  monitor_rate: 10s
+
+memory_monitor:
+  ram_measurement: ram-stats
+  swap_measurement: swap-stats
+  monitor_rate: 10s
