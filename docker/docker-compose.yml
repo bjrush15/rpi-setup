@@ -53,6 +53,8 @@ services:
       - PUID=999
       - PGID=994
       - TZ=US
+    ports:
+      - 8096:8096 # TODO remove this. Need to figure out how to make jellyfin player work better with self signed certs
     volumes:
       - /data/jellyfin/config:/config
       - /data/jellyfin/shows:/data/tvshows
@@ -125,7 +127,7 @@ services:
     image: nginx
     container_name: nginx
     ports:
-      #- 80:80 # uncomment to enable http
+      - 80:80 # uncomment to enable http TODO: disable again. Needed for jellyfin
       - 443:443 # https
       - 5432:5432 # postgres
     volumes:
