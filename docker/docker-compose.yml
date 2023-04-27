@@ -158,12 +158,10 @@ services:
   sysmon:
     build:
       context: ./sysmon
-        #args:
-        #  - SYSMON_BRANCH=sysmon-v0.1
+        args:
+          - SYSMON_BRANCH=sysmon-v0.1
     volumes:
       - ./sysmon/settings.yaml:/sysmon/settings.yaml
-    environment:
-      - SYSMON_BRANCH=sysmon-v0.1
     network_mode: host
     restart: always
 
