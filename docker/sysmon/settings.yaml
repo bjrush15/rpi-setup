@@ -1,12 +1,20 @@
 influxdb:
-  server: <SERVER>
-  token: <TOKEN>
+  server: greenhouse.lan:8086
+  token: o9hzyLxml1AMuaaq6B2m58hg8M27Q-PyyswI4yjTFWVVl7833zPqXB9XpJfD495jz1oLgyaeYjmEwdKNirfPxA==
   bucket: system-monitor
   org: system-monitor
 
-network_speedtest:
-  measurement: net-updown
-  monitor_rate: 30m
+network:
+  speedtest:
+    measurement: net-speed
+    monitor_rate: 30m
+  io:
+    interfaces:
+      - eth0
+      - eth1
+      - wlan1
+    measurement: net-updown
+    monitor_rate: 10s
 
 cpu_monitor:
   measurement: cpu-stats
@@ -15,4 +23,11 @@ cpu_monitor:
 memory_monitor:
   ram_measurement: ram-stats
   swap_measurement: swap-stats
+  monitor_rate: 10s
+
+disk_monitor:
+  directories:
+    - /
+    - /data
+  measurement: disk-stats
   monitor_rate: 10s
