@@ -14,10 +14,10 @@ services:
       - AUDIOBOOKSHELF_UID=997
       - AUDIOBOOKSHELF_GID=992
     volumes:
-      - /data/audiobookshelf/audiobooks:/audiobooks
-      - /data/audiobookshelf/podcasts:/podcasts
-      - /data/audiobookshelf/config:/config
-      - /data/audiobookshelf/metadata:/metadata
+      - /data/media/audiobooks:/audiobooks
+      - /data/media/podcasts:/podcasts
+      - /data/docker/audiobookshelf/config:/config
+      - /data/docker/audiobookshelf/metadata:/metadata
     restart: always
 
 
@@ -40,7 +40,7 @@ services:
     extra_hosts:
       - "greenhouse.lan:192.168.70.1" # Needs the extra host. If excluded, you have to reference health-check services by docker container
     volumes:
-      - /data/homepage/config:/app/config # Make sure your local config directory exists
+      - /data/docker/homepage/config:/app/config # Make sure your local config directory exists
       - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations
     restart: always
 
@@ -56,9 +56,9 @@ services:
     ports:
       - 8096:8096 # TODO remove this. Need to figure out how to make jellyfin player work better with self signed certs
     volumes:
-      - /data/jellyfin/config:/config
-      - /data/jellyfin/shows:/data/tvshows
-      - /data/jellyfin/movies:/data/movies
+      - /data/docker/jellyfin/config:/config
+      - /data/media/shows:/data/tvshows
+      - /data/media/movies:/data/movies
     restart: always
 
 
@@ -71,8 +71,8 @@ services:
       - PGID=1000
       - TZ=US
     volumes:
-      - /data/wiki/config:/config
-      - /data/wiki/data:/data
+      - /data/docker/wiki/config:/config
+      - /data/docker/wiki/data:/data
     restart: always
 
 
@@ -104,8 +104,8 @@ services:
     ports:
       - 8086:8086 # TODO remove global port
     volumes:
-      - /data/influxdb/lib:/var/lib/influxdb
-      - /data/influxdb/etc:/etc/influxdb2
+      - /data/docker/influxdb/lib:/var/lib/influxdb
+      - /data/docker/influxdb/etc:/etc/influxdb2
     restart: always
 
   # Add NFS
@@ -226,7 +226,7 @@ services:
       - INTERNAL_SUBNET= 192.168.68.0
       - ALLOWEDIPS=0.0.0.0/0
     volumes:
-      - /data/wireguard:/config
+      - /data/docker/wireguard:/config
       - /lib/modules:/lib/modules
     network_mode: host
     restart: always
