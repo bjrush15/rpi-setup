@@ -11,8 +11,8 @@ services:
     container_name: audiobooks
     image: ghcr.io/advplyr/audiobookshelf:latest
     environment:
-      - AUDIOBOOKSHELF_UID=997
-      - AUDIOBOOKSHELF_GID=992
+      - AUDIOBOOKSHELF_UID=1000
+      - AUDIOBOOKSHELF_GID=1000
     volumes:
       - /data/media/audiobooks:/audiobooks
       - /data/media/podcasts:/podcasts
@@ -50,8 +50,8 @@ services:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
     environment:
-      - PUID=999
-      - PGID=994
+      - PUID=1000
+      - PGID=1000
       - TZ=US
     ports:
       - 8096:8096 # TODO remove this. Need to figure out how to make jellyfin player work better with self signed certs
