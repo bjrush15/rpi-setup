@@ -83,6 +83,9 @@ services:
       - /data/docker/sonarr:/config
       - /data/media/shows:/tv
       - /data/media/downloads:/downloads
+    networks:
+      - vpn
+      - default
     restart: always
 
   qbittorrent:
@@ -98,6 +101,9 @@ services:
       - /data/media/downloads:/downloads
     depends_on:
       - openvpn
+    network_mode: service:openvpn
+    networks:
+      - vpn
     restart: unless-stopped
 
   # Self hosted wiki - as the name implies
@@ -175,6 +181,9 @@ services:
       - ./nginx/keys/:/etc/ssl/private/
       - ./nginx/certs/:/etc/ssl/certs/
       - ./nginx/snippets:/etc/nginx/snippets/
+    networks:
+      - vpn
+      - default
     restart: always
 
 
@@ -231,7 +240,12 @@ services:
     container_name: openvpn
     cap_add:
       - NET_ADMIN
-    network_mode: host
+    ports:
+      - 8080:8080 # expose port for qbittorrent - switch to network_mode: host?
+    networks:
+      vpn:
+        aliases:
+          - qbittorrent # set an alias for qbittorrent behind this container
     restart: unless-stopped # disabled until interplay with wireguard is fixed
 
 
@@ -247,24 +261,28 @@ services:
 
 
   # VPN connection from the outside world to lan
-  wireguard:
-    image: lscr.io/linuxserver/wireguard
-    container_name: wireguard
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=America/Los_Angeles
-      - SERVERURL=woodshed.cc
-      - SERVERPORT=51820
-      - PEERS=laptop
-      - PEERDNS=192.168.70.1
-      - INTERNAL_SUBNET= 192.168.68.0
-      - ALLOWEDIPS=0.0.0.0/0
-    volumes:
-      - /data/docker/wireguard:/config
-      - /lib/modules:/lib/modules
-    network_mode: host
-    restart: always
+  #wireguard:
+  #  image: lscr.io/linuxserver/wireguard
+  #  container_name: wireguard
+  #  cap_add:
+  #    - NET_ADMIN
+  #    - SYS_MODULE
+  #  environment:
+  #    - PUID=1000
+  #    - PGID=1000
+  #    - TZ=America/Los_Angeles
+  #    - SERVERURL=woodshed.cc
+  #    - SERVERPORT=51820
+  #    - PEERS=laptop
+  #    - PEERDNS=192.168.70.1
+  #    - INTERNAL_SUBNET= 192.168.68.0
+  #    - ALLOWEDIPS=0.0.0.0/0
+  #  volumes:
+  #    - /data/docker/wireguard:/config
+  #    - /lib/modules:/lib/modules
+  #  network_mode: host
+  #  restart: always
+
+networks:
+  vpn:
+    driver: bridge
