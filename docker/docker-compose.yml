@@ -159,9 +159,10 @@ services:
     build:
       context: ./sysmon
       args:
-        SYSMON_BRANCH: sysmon-v0.1
+        SYSMON_BRANCH: sysmon-v0.2.1
     volumes:
       - ./sysmon/settings.yaml:/sysmon/settings.yaml
+      - /data:/data
     network_mode: host
     restart: always
 
