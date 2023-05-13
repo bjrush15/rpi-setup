@@ -11,13 +11,13 @@ services:
     container_name: audiobooks
     image: ghcr.io/advplyr/audiobookshelf:latest
     environment:
-      - AUDIOBOOKSHELF_UID=997
-      - AUDIOBOOKSHELF_GID=992
+      - AUDIOBOOKSHELF_UID=1000
+      - AUDIOBOOKSHELF_GID=1000
     volumes:
-      - /data/audiobookshelf/audiobooks:/audiobooks
-      - /data/audiobookshelf/podcasts:/podcasts
-      - /data/audiobookshelf/config:/config
-      - /data/audiobookshelf/metadata:/metadata
+      - /data/media/audiobooks:/audiobooks
+      - /data/media/podcasts:/podcasts
+      - /data/docker/audiobookshelf/config:/config
+      - /data/docker/audiobookshelf/metadata:/metadata
     restart: always
 
 
@@ -40,7 +40,7 @@ services:
     extra_hosts:
       - "greenhouse.lan:192.168.70.1" # Needs the extra host. If excluded, you have to reference health-check services by docker container
     volumes:
-      - /data/homepage/config:/app/config # Make sure your local config directory exists
+      - /data/docker/homepage/config:/app/config # Make sure your local config directory exists
       - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations
     restart: always
 
@@ -50,17 +50,61 @@ services:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
     environment:
-      - PUID=999
-      - PGID=994
+      - PUID=1000
+      - PGID=1000
       - TZ=US
     ports:
       - 8096:8096 # TODO remove this. Need to figure out how to make jellyfin player work better with self signed certs
     volumes:
-      - /data/jellyfin/config:/config
-      - /data/jellyfin/shows:/data/tvshows
-      - /data/jellyfin/movies:/data/movies
+      - /data/docker/jellyfin/config:/config
+      - /data/media/shows:/data/tvshows
+      - /data/media/movies:/data/movies
     restart: always
 
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+    volumes:
+      - /data/docker/prowlarr:/config
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+    volumes:
+      - /data/docker/sonarr:/config
+      - /data/media/shows:/tv
+      - /data/media/downloads:/downloads
+    networks:
+      - vpn
+      - default
+    restart: always
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+      - WEBUI_PORT=8080
+    volumes:
+      - /data/docker/qbittorrent/config:/config
+      - /data/media/downloads:/downloads
+    depends_on:
+      - openvpn
+    network_mode: service:openvpn
+    networks:
+      - vpn
+    restart: unless-stopped
 
   # Self hosted wiki - as the name implies
   wikijs:
@@ -71,8 +115,8 @@ services:
       - PGID=1000
       - TZ=US
     volumes:
-      - /data/wiki/config:/config
-      - /data/wiki/data:/data
+      - /data/docker/wiki/config:/config
+      - /data/docker/wiki/data:/data
     restart: always
 
 
@@ -104,8 +148,8 @@ services:
     ports:
       - 8086:8086 # TODO remove global port
     volumes:
-      - /data/influxdb/lib:/var/lib/influxdb
-      - /data/influxdb/etc:/etc/influxdb2
+      - /data/docker/influxdb/lib:/var/lib/influxdb
+      - /data/docker/influxdb/etc:/etc/influxdb2
     restart: always
 
   # Add NFS
@@ -137,6 +181,9 @@ services:
       - ./nginx/keys/:/etc/ssl/private/
       - ./nginx/certs/:/etc/ssl/certs/
       - ./nginx/snippets:/etc/nginx/snippets/
+    networks:
+      - vpn
+      - default
     restart: always
 
 
@@ -194,7 +241,12 @@ services:
     container_name: openvpn
     cap_add:
       - NET_ADMIN
-    network_mode: host
+    ports:
+      - 8080:8080 # expose port for qbittorrent - switch to network_mode: host?
+    networks:
+      vpn:
+        aliases:
+          - qbittorrent # set an alias for qbittorrent behind this container
     restart: unless-stopped # disabled until interplay with wireguard is fixed
 
 
@@ -210,24 +262,28 @@ services:
 
 
   # VPN connection from the outside world to lan
-  wireguard:
-    image: lscr.io/linuxserver/wireguard
-    container_name: wireguard
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=America/Los_Angeles
-      - SERVERURL=woodshed.cc
-      - SERVERPORT=51820
-      - PEERS=laptop
-      - PEERDNS=192.168.70.1
-      - INTERNAL_SUBNET= 192.168.68.0
-      - ALLOWEDIPS=0.0.0.0/0
-    volumes:
-      - /data/wireguard:/config
-      - /lib/modules:/lib/modules
-    network_mode: host
-    restart: always
+  #wireguard:
+  #  image: lscr.io/linuxserver/wireguard
+  #  container_name: wireguard
+  #  cap_add:
+  #    - NET_ADMIN
+  #    - SYS_MODULE
+  #  environment:
+  #    - PUID=1000
+  #    - PGID=1000
+  #    - TZ=America/Los_Angeles
+  #    - SERVERURL=woodshed.cc
+  #    - SERVERPORT=51820
+  #    - PEERS=laptop
+  #    - PEERDNS=192.168.70.1
+  #    - INTERNAL_SUBNET= 192.168.68.0
+  #    - ALLOWEDIPS=0.0.0.0/0
+  #  volumes:
+  #    - /data/docker/wireguard:/config
+  #    - /lib/modules:/lib/modules
+  #  network_mode: host
+  #  restart: always
+
+networks:
+  vpn:
+    driver: bridge
